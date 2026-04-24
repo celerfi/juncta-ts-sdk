@@ -223,7 +223,15 @@ describe("getSwapQuote", () => {
 
   it("appends all required params", async () => {
     mockFetch.mockReturnValueOnce(
-      ok({ chain: "cedra", pool: "p1", amount_in: 100, amount_out: 99 })
+      ok({
+        chain: "cedra",
+        pool: "p1",
+        amount_in: "100",
+        amount_out: "99",
+        fee: "1",
+        price: "0.99",
+        direction: "x_to_y",
+      })
     );
     await client.getSwapQuote({
       chain: "cedra",
@@ -262,6 +270,92 @@ describe("getSwapQuote", () => {
     });
     const url: string = mockFetch.mock.calls[0][0];
     expect(url).not.toContain("sender");
+  });
+});
+
+// ── tx build + submit ────────────────────────────────────────────────────────
+
+describe("tx build methods", () => {
+  const client = new JunctaClient({ baseUrl: "http://test" });
+
+  it("buildSwapTx uses POST and snake_case payload keys", async () => {
+    mockFetch.mockReturnValueOnce(ok({ chain: "cedra", type: "entry_function", payload: {} }));
+    await client.buildSwapTx({
+      chain: "cedra",
+      pool: "p1",
+      amountIn: 100,
+      minOut: 90,
+      direction: "x_to_y",
+      sender: "0xabc",
+    });
+
+    const [url, opts] = mockFetch.mock.calls[0];
+    expect(url).toBe("http://test/tx/swap/build");
+    expect(opts.method).toBe("POST");
+    expect(JSON.parse(opts.body)).toEqual({
+      chain: "cedra",
+      pool: "p1",
+      amount_in: 100,
+      min_out: 90,
+      direction: "x_to_y",
+      sender: "0xabc",
+    });
+  });
+
+  it("buildBorrowLPTx includes optional fields when set", async () => {
+    mockFetch.mockReturnValueOnce(ok({ chain: "aptos", type: "entry_function", payload: {} }));
+    await client.buildBorrowLPTx({
+      chain: "aptos",
+      storeAddr: "0xstore",
+      lpStoreAddr: "0xlp",
+      oracleAddr: "0xoracle",
+      token: "0xtoken",
+      positionId: 1,
+      poolId: 2,
+      borrowAmount: 500,
+      sender: "0xme",
+    });
+
+    const [, opts] = mockFetch.mock.calls[0];
+    expect(JSON.parse(opts.body)).toEqual({
+      chain: "aptos",
+      store_addr: "0xstore",
+      lp_store_addr: "0xlp",
+      oracle_addr: "0xoracle",
+      token: "0xtoken",
+      position_id: 1,
+      pool_id: 2,
+      borrow_amount: 500,
+      sender: "0xme",
+    });
+  });
+
+  it("omits undefined optional fields from POST payload", async () => {
+    mockFetch.mockReturnValueOnce(ok({ chain: "stellar", type: "soroban_xdr", payload: "AAAA" }));
+    await client.buildLendDepositTx({
+      chain: "stellar",
+      amount: 1000,
+      sender: "GABC",
+    });
+
+    const [, opts] = mockFetch.mock.calls[0];
+    expect(JSON.parse(opts.body)).toEqual({
+      chain: "stellar",
+      amount: 1000,
+      sender: "GABC",
+    });
+  });
+
+  it("submitTx maps signedXdr to signed_xdr", async () => {
+    mockFetch.mockReturnValueOnce(ok({ hash: "abc123" }));
+    await client.submitTx({ chain: "stellar", signedXdr: "AAAA..." });
+
+    const [url, opts] = mockFetch.mock.calls[0];
+    expect(url).toBe("http://test/tx/submit");
+    expect(JSON.parse(opts.body)).toEqual({
+      chain: "stellar",
+      signed_xdr: "AAAA...",
+    });
   });
 });
 

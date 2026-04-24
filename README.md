@@ -87,8 +87,40 @@ const quote = await client.getSwapQuote({
   sender: "0xabc123",   // optional
 });
 
-console.log(quote.amount_out, quote.price_impact_bps);
+console.log(quote.amount_out, quote.fee, quote.price);
 ```
+
+### Transaction build + submit
+
+```ts
+// Build an unsigned transaction payload
+const build = await client.buildSwapTx({
+  chain: "cedra",
+  pool: "1",
+  amountIn: 1_000_000,
+  minOut: 0,
+  direction: "x_to_y",
+  sender: "0xabc123",
+});
+
+// For Stellar, submit the signed XDR after wallet signing
+const submitted = await client.submitTx({
+  chain: "stellar",
+  signedXdr: "AAAAAgAAA...",
+});
+
+console.log(build.type, submitted.hash);
+```
+
+Supported builder methods:
+- `buildSwapTx`
+- `buildAddLiquidityTx`
+- `buildRemoveLiquidityTx`
+- `buildCreatePoolTx`
+- `buildLendDepositTx`
+- `buildLendWithdrawTx`
+- `buildBorrowLPTx`
+- `buildRepayTx`
 
 ## Error handling
 
@@ -125,6 +157,8 @@ import type {
   VolumeRow,
   FeesResponse,
   QuoteResponse,
+  BuildResponse,
+  SubmitTxResponse,
 } from "@juncta/sdk";
 ```
 

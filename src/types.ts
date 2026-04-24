@@ -2,6 +2,7 @@ export type Chain = "cedra-testnet" | "aptos-testnet" | "stellar-testnet";
 export type SwapChain = "cedra" | "aptos" | "stellar";
 export type SwapDirection = "x_to_y" | "y_to_x";
 export type Period = "1h" | "24h" | "7d" | "30d";
+export type PoolType = "stable" | "standard" | "volatile";
 
 export interface Pool {
   pool_id: string;
@@ -77,10 +78,21 @@ export interface FeesResponse {
 export interface QuoteResponse {
   chain: SwapChain;
   pool: string;
-  amount_in: number;
-  amount_out: number;
+  amount_in: string;
+  amount_out: string;
+  fee: string;
+  price: string;
   direction: SwapDirection;
-  price_impact_bps: number;
+}
+
+export interface BuildResponse {
+  chain: SwapChain;
+  type: string;
+  payload: unknown;
+}
+
+export interface SubmitTxResponse {
+  hash: string;
 }
 
 export interface JunctaClientOptions {
@@ -118,4 +130,83 @@ export interface SwapQuoteParams {
   amountIn: string;
   direction: SwapDirection;
   sender?: string;
+}
+
+export interface SwapBuildParams {
+  chain: SwapChain;
+  pool: string;
+  amountIn: number;
+  minOut: number;
+  direction: SwapDirection;
+  sender: string;
+}
+
+export interface AddLiquidityBuildParams {
+  chain: SwapChain;
+  pool: string;
+  binId: number;
+  amountX: number;
+  amountY: number;
+  sender: string;
+}
+
+export interface RemoveLiquidityBuildParams {
+  chain: SwapChain;
+  pool: string;
+  binId: number;
+  shares: number;
+  sender: string;
+}
+
+export interface CreatePoolBuildParams {
+  chain: SwapChain;
+  tokenX: string;
+  tokenY: string;
+  basePrice: number;
+  poolType: PoolType;
+  binStep: number;
+  initialPrice: number;
+  sender: string;
+}
+
+export interface LendDepositBuildParams {
+  chain: SwapChain;
+  storeAddr?: string;
+  token?: string;
+  amount: number;
+  sender: string;
+}
+
+export interface LendWithdrawBuildParams {
+  chain: SwapChain;
+  storeAddr?: string;
+  token?: string;
+  shares: number;
+  sender: string;
+}
+
+export interface BorrowLPBuildParams {
+  chain: SwapChain;
+  storeAddr?: string;
+  lpStoreAddr?: string;
+  oracleAddr?: string;
+  token?: string;
+  positionId?: number;
+  poolId?: number;
+  borrowAmount: number;
+  sender: string;
+}
+
+export interface RepayBuildParams {
+  chain: SwapChain;
+  storeAddr?: string;
+  token?: string;
+  positionId?: number;
+  amount: number;
+  sender: string;
+}
+
+export interface SubmitTxParams {
+  chain: SwapChain;
+  signedXdr: string;
 }

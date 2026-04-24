@@ -20,6 +20,8 @@ export type {
   JunctaClientOptions,
   PoolsParams,
   TokensParams,
+  LendableToken,
+  LendableTokensResponse,
   AnalyticsParams,
   VolumeParams,
   FeesParams,

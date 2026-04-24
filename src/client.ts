@@ -3,10 +3,13 @@ import type {
   AnalyticsParams,
   BorrowLPBuildParams,
   BuildResponse,
+  Chain,
   CreatePoolBuildParams,
   FeesParams,
   FeesResponse,
   JunctaClientOptions,
+  LendableToken,
+  LendableTokensResponse,
   LendDepositBuildParams,
   LendWithdrawBuildParams,
   Pool,
@@ -58,8 +61,14 @@ export class JunctaClient {
       chain_id: params.chainId,
       page: params.page?.toString(),
       limit: params.limit?.toString(),
+      stable: params.stable !== undefined ? String(params.stable) : undefined,
     });
     return this.get<TokensResponse>(`/tokens${q}`);
+  }
+
+  async getLendableTokens(params: { chainId?: Chain } = {}): Promise<LendableTokensResponse> {
+    const q = this.buildQuery({ chain_id: params.chainId });
+    return this.get<LendableTokensResponse>(`/lending/lendable-tokens${q}`);
   }
 
   async getToken(chainId: string, contractId: string): Promise<Token> {

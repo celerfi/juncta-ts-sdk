@@ -109,6 +109,32 @@ export interface TokensParams {
   chainId?: Chain;
   page?: number;
   limit?: number;
+  stable?: boolean;
+}
+
+export interface LendableToken {
+  chain_id: Chain;
+  contract_id: string;
+  symbol: string;
+  name: string;
+  image_url: string;
+  decimals: number | null;
+  verified: boolean;
+  market_id: string;
+  store_address: string;
+  total_supplied_raw: string;
+  total_borrowed_raw: string;
+  utilization: number;
+  supply_apy: number | null;
+  borrow_apy: number | null;
+  collateral_factor: number | null;
+  ltv: number | null;
+  liquidation_threshold: number | null;
+}
+
+export interface LendableTokensResponse {
+  tokens: LendableToken[];
+  total: number;
 }
 
 export interface AnalyticsParams {

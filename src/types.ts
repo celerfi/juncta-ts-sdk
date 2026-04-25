@@ -188,6 +188,31 @@ export interface LendableTokensResponse {
   total: number;
 }
 
+export interface PoolBinVisualization {
+  bin_index: number;
+  type: "center" | "active" | "lending" | "idle";
+  reserve_x: string;
+  reserve_y: string;
+}
+
+export interface PoolBinsResponse {
+  pool_id: string;
+  active_bin: number;
+  bins: PoolBinVisualization[];
+}
+
+export interface ProtocolOverviewResponse {
+  total_tvl_usd: number;
+  lending_supplied_usd: number;
+  trading_fee_apy: number;
+  lending_yield_apy: number;
+  combined_apy: number;
+  total_bins: number;
+  active_bins: number;
+  lending_bins: number;
+  idle_bins: number;
+}
+
 export interface JunctaClientOptions {
   baseUrl?: string;
 }

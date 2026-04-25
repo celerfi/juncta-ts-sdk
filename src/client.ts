@@ -17,11 +17,13 @@ import type {
   LiquidityPreviewParams,
   LiquidityPreviewResponse,
   Pool,
+  PoolBinsResponse,
   PoolDetail,
   PoolsParams,
   PoolsResponse,
   PositionsParams,
   PositionsResponse,
+  ProtocolOverviewResponse,
   QuoteResponse,
   RemoveLiquidityBuildParams,
   RepayBuildParams,
@@ -60,6 +62,10 @@ export class JunctaClient {
 
   async getPool(poolId: string): Promise<PoolDetail> {
     return this.get<PoolDetail>(`/pools/${encodeURIComponent(poolId)}`);
+  }
+
+  async getPoolBins(poolId: string): Promise<PoolBinsResponse> {
+    return this.get<PoolBinsResponse>(`/pools/${encodeURIComponent(poolId)}/bins`);
   }
 
   // ── Tokens ───────────────────────────────────────────────────────────────
@@ -116,6 +122,10 @@ export class JunctaClient {
   }
 
   // ── Analytics ────────────────────────────────────────────────────────────
+
+  async getProtocolOverview(): Promise<ProtocolOverviewResponse> {
+    return this.get<ProtocolOverviewResponse>("/analytics/protocol-overview");
+  }
 
   async getAnalyticsSummary(params: AnalyticsParams = {}): Promise<SummaryResponse> {
     const q = this.buildQuery({ chain_id: params.chainId });

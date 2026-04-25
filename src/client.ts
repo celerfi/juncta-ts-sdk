@@ -1,4 +1,6 @@
 import type {
+  AdaptiveDeregisterParams,
+  AdaptiveRegisterParams,
   AddLiquidityBuildParams,
   AnalyticsParams,
   BorrowLPBuildParams,
@@ -12,9 +14,14 @@ import type {
   LendableTokensResponse,
   LendDepositBuildParams,
   LendWithdrawBuildParams,
+  LiquidityPreviewParams,
+  LiquidityPreviewResponse,
   Pool,
+  PoolDetail,
   PoolsParams,
   PoolsResponse,
+  PositionsParams,
+  PositionsResponse,
   QuoteResponse,
   RemoveLiquidityBuildParams,
   RepayBuildParams,
@@ -24,6 +31,7 @@ import type {
   SwapBuildParams,
   SwapQuoteParams,
   Token,
+  TokenPrice,
   TokensParams,
   TokensResponse,
   VolumeParams,
@@ -50,8 +58,8 @@ export class JunctaClient {
     return this.get<PoolsResponse>(`/pools${q}`);
   }
 
-  async getPool(poolId: string): Promise<Pool> {
-    return this.get<Pool>(`/pools/${encodeURIComponent(poolId)}`);
+  async getPool(poolId: string): Promise<PoolDetail> {
+    return this.get<PoolDetail>(`/pools/${encodeURIComponent(poolId)}`);
   }
 
   // ── Tokens ───────────────────────────────────────────────────────────────
@@ -75,6 +83,36 @@ export class JunctaClient {
     return this.get<Token>(
       `/tokens/${encodeURIComponent(chainId)}/${encodeURIComponent(contractId)}`
     );
+  }
+
+  async getTokenPrice(chainId: Chain, contractId: string): Promise<TokenPrice> {
+    const q = this.buildQuery({ chain_id: chainId, contract_id: contractId });
+    return this.get<TokenPrice>(`/tokens/price${q}`);
+  }
+
+  // ── Positions ────────────────────────────────────────────────────────────
+
+  async getPositions(account: string, params: PositionsParams = {}): Promise<PositionsResponse> {
+    const q = this.buildQuery({
+      chain_id: params.chainId,
+      pool_id: params.poolId,
+    });
+    return this.get<PositionsResponse>(`/positions/${encodeURIComponent(account)}${q}`);
+  }
+
+  // ── Liquidity Preview ─────────────────────────────────────────────────────
+
+  async getLiquidityPreview(params: LiquidityPreviewParams): Promise<LiquidityPreviewResponse> {
+    const q = this.buildQuery({
+      chain_id: params.chainId,
+      pool_id: params.poolId,
+      strategy: params.strategy,
+      amount_x: params.amountX?.toString(),
+      amount_y: params.amountY?.toString(),
+      center_bin: params.centerBin?.toString(),
+      bid_weight: params.bidWeight?.toString(),
+    });
+    return this.get<LiquidityPreviewResponse>(`/liquidity/preview${q}`);
   }
 
   // ── Analytics ────────────────────────────────────────────────────────────
@@ -132,8 +170,11 @@ export class JunctaClient {
       chain: params.chain,
       pool: params.pool,
       bin_id: params.binId,
+      center_bin: params.centerBin,
       amount_x: params.amountX,
       amount_y: params.amountY,
+      strategy: params.strategy,
+      bid_weight: params.bidWeight,
       sender: params.sender,
     });
   }
@@ -210,6 +251,25 @@ export class JunctaClient {
     return this.post<SubmitTxResponse>("/tx/submit", {
       chain: params.chain,
       signed_xdr: params.signedXdr,
+    });
+  }
+
+  async buildAdaptiveRegisterTx(params: AdaptiveRegisterParams): Promise<BuildResponse> {
+    return this.post<BuildResponse>("/tx/adaptive/register/build", {
+      chain: params.chain,
+      pool: params.pool,
+      position_id: params.positionId,
+      lower_bin: params.lowerBin,
+      upper_bin: params.upperBin,
+      sender: params.sender,
+    });
+  }
+
+  async buildAdaptiveDeregisterTx(params: AdaptiveDeregisterParams): Promise<BuildResponse> {
+    return this.post<BuildResponse>("/tx/adaptive/deregister/build", {
+      chain: params.chain,
+      position_id: params.positionId,
+      sender: params.sender,
     });
   }
 

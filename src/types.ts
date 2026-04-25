@@ -3,25 +3,53 @@ export type SwapChain = "cedra" | "aptos" | "stellar";
 export type SwapDirection = "x_to_y" | "y_to_x";
 export type Period = "1h" | "24h" | "7d" | "30d";
 export type PoolType = "stable" | "standard" | "volatile";
+export type LiquidityStrategy = "spot" | "curve" | "bid_ask" | "wide";
+
+export interface ActiveBin {
+  index: number;
+  price: number;
+  reserve_x: string;
+  reserve_y: string;
+}
 
 export interface Pool {
   pool_id: string;
   chain_id: Chain;
   token_x: string;
   token_y: string;
-  fee_bps: number;
+  token_x_symbol: string;
+  token_y_symbol: string;
+  token_x_decimals: number;
+  token_y_decimals: number;
+  fee: number;
   bin_step: number;
+  tvl_usd: number;
+  volume_24h_usd: number;
+  fees_24h_usd: number;
+  apy: number;
   active_bin?: ActiveBin;
-  reserve_x: string;
-  reserve_y: string;
-  created_at: string;
+  updated_at: string;
 }
 
-export interface ActiveBin {
-  bin_index: number;
-  price: number;
-  reserve_a: string;
-  reserve_b: string;
+export interface PoolBins {
+  total: number;
+  active_count: number;
+  active_indexes: number[];
+  lending_count: number;
+  lending_indexes: number[];
+  idle_count: number;
+  idle_indexes: number[];
+}
+
+export interface APYBreakdown {
+  fee_apy: number;
+  lending_apy: number;
+  total_apy: number;
+}
+
+export interface PoolDetail extends Pool {
+  bins: PoolBins;
+  apy_breakdown: APYBreakdown;
 }
 
 export interface PoolsResponse {
@@ -49,6 +77,46 @@ export interface TokensResponse {
   total: number;
   page: number;
   limit: number;
+}
+
+export interface LPPosition {
+  chain_id: Chain;
+  pool_id: string;
+  net_shares: number;
+  net_amount_x: number;
+  net_amount_y: number;
+}
+
+export interface PositionsResponse {
+  account: string;
+  positions: LPPosition[];
+  has_position: boolean;
+}
+
+export interface TokenPrice {
+  chain_id: Chain;
+  contract_id: string;
+  symbol?: string;
+  price_usd: number;
+  updated_at: string;
+}
+
+export interface BinWeight {
+  bin_index: number;
+  weight: number;
+  amount_x: number;
+  amount_y: number;
+}
+
+export interface LiquidityPreviewResponse {
+  strategy: LiquidityStrategy;
+  center_bin: number;
+  bin_range: [number, number];
+  bin_count: number;
+  bins: BinWeight[];
+  total_amount_x: number;
+  total_amount_y: number;
+  estimated_apy: number;
 }
 
 export interface SummaryResponse {
@@ -95,23 +163,6 @@ export interface SubmitTxResponse {
   hash: string;
 }
 
-export interface JunctaClientOptions {
-  baseUrl?: string;
-}
-
-export interface PoolsParams {
-  chainId?: Chain;
-  page?: number;
-  limit?: number;
-}
-
-export interface TokensParams {
-  chainId?: Chain;
-  page?: number;
-  limit?: number;
-  stable?: boolean;
-}
-
 export interface LendableToken {
   chain_id: Chain;
   contract_id: string;
@@ -135,6 +186,38 @@ export interface LendableToken {
 export interface LendableTokensResponse {
   tokens: LendableToken[];
   total: number;
+}
+
+export interface JunctaClientOptions {
+  baseUrl?: string;
+}
+
+export interface PoolsParams {
+  chainId?: Chain;
+  page?: number;
+  limit?: number;
+}
+
+export interface PositionsParams {
+  chainId?: Chain;
+  poolId?: string;
+}
+
+export interface TokensParams {
+  chainId?: Chain;
+  page?: number;
+  limit?: number;
+  stable?: boolean;
+}
+
+export interface LiquidityPreviewParams {
+  chainId: Chain;
+  poolId: string;
+  strategy?: LiquidityStrategy;
+  amountX?: number;
+  amountY?: number;
+  centerBin?: number;
+  bidWeight?: number;
 }
 
 export interface AnalyticsParams {
@@ -170,9 +253,12 @@ export interface SwapBuildParams {
 export interface AddLiquidityBuildParams {
   chain: SwapChain;
   pool: string;
-  binId: number;
+  binId?: number;
+  centerBin?: number;
   amountX: number;
   amountY: number;
+  strategy?: LiquidityStrategy;
+  bidWeight?: number;
   sender: string;
 }
 
@@ -229,6 +315,21 @@ export interface RepayBuildParams {
   token?: string;
   positionId?: number;
   amount: number;
+  sender: string;
+}
+
+export interface AdaptiveRegisterParams {
+  chain: SwapChain;
+  pool: string;
+  positionId: number;
+  lowerBin: number;
+  upperBin: number;
+  sender: string;
+}
+
+export interface AdaptiveDeregisterParams {
+  chain: SwapChain;
+  positionId: number;
   sender: string;
 }
 
